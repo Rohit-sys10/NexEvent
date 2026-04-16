@@ -2,6 +2,7 @@ import express from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
 import { errorHandler } from './middleware/errorHandler.js';
+import { corsOriginDelegate } from './config/cors.js';
 
 // Routes
 import authRoutes from './routes/auth.js';
@@ -15,7 +16,7 @@ const app = express();
 app.use(helmet());
 app.use(
   cors({
-    origin: process.env.FRONTEND_URL || 'http://localhost:5173',
+    origin: corsOriginDelegate,
     credentials: true,
   })
 );

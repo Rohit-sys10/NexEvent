@@ -3,7 +3,6 @@ import { useNavigate } from 'react-router-dom';
 import { Navbar } from '../components/layout/Navbar';
 import { eventService } from '../services/eventService';
 import { EventForm } from '../components/event/EventForm';
-import { Card } from '../components/ui/Card';
 import { useToast } from '../hooks/useToast';
 
 export const CreateEvent = () => {
@@ -26,18 +25,18 @@ export const CreateEvent = () => {
   };
 
   return (
-    <div className="min-h-screen page-fade-in">
+    <div className="min-h-screen bg-gradient-to-br from-white via-gray-50 to-gray-100 page-fade-in">
       <Navbar />
 
-      <main className="mx-auto max-w-4xl space-y-6 px-4 py-8 sm:px-6 lg:px-8">
-        <div className="space-y-1">
-          <h1 className="text-2xl font-semibold text-gray-900">Create New Event</h1>
-          <p className="text-sm text-gray-600">Build an event page that looks professional and converts attendees.</p>
+      <main className="mx-auto max-w-7xl space-y-10 px-6 py-8 md:px-10 lg:px-16 lg:py-10">
+        <div className="space-y-2">
+          <h1 className="text-3xl font-bold tracking-tight text-gray-900">Create New Event</h1>
+          <p className="max-w-2xl text-sm text-gray-500">Build an event page that looks professional and converts attendees.</p>
         </div>
 
-        <Card className="p-6">
+        <div className="max-w-5xl">
           <EventForm onSubmit={handleSubmit} loading={loading} />
-        </Card>
+        </div>
       </main>
     </div>
   );

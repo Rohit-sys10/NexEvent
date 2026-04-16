@@ -2,9 +2,9 @@ import { Loader2 } from 'lucide-react';
 import { cn } from '../../lib/ui';
 
 const VARIANT_CLASS = {
-  primary: 'bg-blue-600 text-white hover:bg-blue-700',
-  secondary: 'border border-gray-300 text-gray-700 hover:bg-gray-100',
-  danger: 'bg-red-500 text-white hover:bg-red-600',
+  primary: 'bg-gradient-to-r from-blue-600 to-purple-600 text-white hover:from-blue-700 hover:to-purple-700',
+  secondary: 'border border-gray-300 bg-white text-gray-700 hover:bg-gray-50',
+  danger: 'bg-rose-600 text-white hover:bg-rose-700',
 };
 
 export const Button = ({
@@ -24,7 +24,7 @@ export const Button = ({
       type={type}
       disabled={isDisabled}
       className={cn(
-        'inline-flex h-11 items-center justify-center gap-2 rounded-2xl px-4 text-sm font-medium shadow-sm transition-all duration-200 ease-in-out active:scale-95',
+        'inline-flex h-12 items-center justify-center gap-2 rounded-xl px-6 text-sm font-medium shadow-md transition-all duration-200 hover:shadow-lg active:scale-95',
         VARIANT_CLASS[variant],
         fullWidth && 'w-full',
         isDisabled && 'cursor-not-allowed opacity-50',

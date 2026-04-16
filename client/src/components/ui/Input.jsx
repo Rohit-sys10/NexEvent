@@ -7,7 +7,7 @@ export const Input = ({ label, error, className = '', type = 'text', ...props })
       <input
         type={type}
         className={cn(
-          'h-11 w-full rounded-2xl border border-gray-200 px-3 text-sm text-gray-800 outline-none transition-all duration-200 ease-in-out placeholder:text-gray-400 focus:ring-2 focus:ring-blue-500',
+          'h-12 w-full rounded-xl border border-gray-300 bg-gray-50 px-4 text-sm text-gray-800 shadow-sm outline-none transition-all duration-200 placeholder:text-gray-400 hover:border-gray-400 focus:border-transparent focus:bg-white focus:ring-2 focus:ring-blue-500',
           error && 'border-red-400',
           className
         )}

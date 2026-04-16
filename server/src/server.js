@@ -5,6 +5,7 @@ import app from './app.js';
 import { connectDB } from './config/database.js';
 import { setupSocketHandlers } from './socket/socketHandlers.js';
 import { setRealtimeIO } from './socket/realtime.js';
+import { corsOriginDelegate } from './config/cors.js';
 
 const PORT = process.env.BACKEND_PORT || 5001;
 
@@ -14,7 +15,7 @@ const server = http.createServer(app);
 // Initialize Socket.io
 const io = new Server(server, {
   cors: {
-    origin: process.env.FRONTEND_URL || 'http://localhost:5173',
+    origin: corsOriginDelegate,
     credentials: true,
   },
 });

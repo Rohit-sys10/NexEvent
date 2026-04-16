@@ -77,19 +77,19 @@ export const Dashboard = () => {
   }, [user, showToast]);
 
   return (
-    <div className="min-h-screen page-fade-in">
+    <div className="min-h-screen bg-gradient-to-br from-white via-gray-50 to-gray-100 page-fade-in">
       <Navbar />
 
-      <main className="mx-auto max-w-7xl space-y-6 px-4 py-8 sm:px-6 lg:px-8">
-        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-          <div className="space-y-1">
-            <h1 className="text-2xl font-semibold text-gray-900">Explore Events</h1>
-            <p className="text-sm text-gray-600">Discover, register, and track your next event.</p>
+      <main className="mx-auto max-w-7xl space-y-10 px-6 py-8 md:px-10 lg:px-16 lg:py-10">
+        <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+          <div className="space-y-2">
+            <h1 className="text-3xl font-bold tracking-tight text-gray-900">Explore Events</h1>
+            <p className="max-w-2xl text-sm text-gray-500">Discover, register, and track your next event.</p>
           </div>
           {user?.role === 'organizer' && (
             <Button
               onClick={() => navigate('/create-event')}
-              className="w-full sm:w-auto"
+              className="w-full lg:w-auto"
             >
               <Plus size={18} />
               <span>Create Event</span>
@@ -97,18 +97,18 @@ export const Dashboard = () => {
           )}
         </div>
 
-        <div className="space-y-4 rounded-2xl border border-gray-200 bg-white p-5 shadow-sm">
+        <div className="space-y-4 rounded-2xl border border-gray-100 bg-white p-5 shadow-sm">
           <div className="relative">
-            <Search className="pointer-events-none absolute left-3 top-3 h-5 w-5 text-gray-400" />
+            <Search className="pointer-events-none absolute left-5 top-1/2 h-5 w-5 -translate-y-1/2 text-gray-400" />
             <input
               value={search}
               onChange={(event) => setSearch(event.target.value)}
               placeholder="Search by title, description, or location"
-              className="h-11 w-full rounded-2xl border border-gray-200 pl-10 pr-3 text-sm outline-none transition-all duration-200 ease-in-out focus:ring-2 focus:ring-blue-500"
+              className="h-12 w-full rounded-full border border-gray-300 bg-white pl-12 pr-5 text-sm text-gray-800 shadow-sm outline-none transition-all duration-200 hover:border-gray-400 focus:border-transparent focus:ring-2 focus:ring-blue-500"
             />
           </div>
 
-          <div className="flex flex-wrap gap-2">
+          <div className="flex flex-wrap gap-3">
             {FILTER_CHIPS.map((chip) => (
               <button
                 type="button"
@@ -117,10 +117,10 @@ export const Dashboard = () => {
                   setCategory(chip);
                   setPage(1);
                 }}
-                className={`rounded-full border px-3 py-1.5 text-xs font-medium capitalize transition-all duration-200 ease-in-out ${
+                className={`rounded-full px-4 py-2 text-xs font-medium capitalize transition-all duration-200 ${
                   category === chip
-                    ? 'border-blue-200 bg-blue-50 text-blue-700'
-                    : 'border-gray-200 text-gray-600 hover:bg-gray-100'
+                    ? 'bg-blue-100 text-blue-700'
+                    : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
                 }`}
               >
                 {chip === 'all' ? 'All' : chip}
@@ -143,10 +143,11 @@ export const Dashboard = () => {
           />
         ) : (
           <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
-            {filteredEvents.map((event) => (
+            {filteredEvents.map((event, index) => (
               <EventCard
                 key={event._id}
                 event={event}
+                featured={index === 0}
                 isOrganizer={event.organizer?._id === user?.id || event.organizer?.id === user?.id}
                 isRegistered={userRegistrations.includes(event._id)}
                 isActionLoading={registrationLoadingId === event._id}
