@@ -10,6 +10,7 @@ import { authenticate } from '../middleware/authMiddleware.js';
 const router = express.Router();
 
 router.post('/', authenticate, registerForEvent);
+router.post('/:eventId/unregister', authenticate, unregisterFromEvent);
 router.delete('/:eventId', authenticate, unregisterFromEvent);
 router.get('/my-registrations', authenticate, getUserRegistrations);
 router.get('/event/:eventId/registrations', authenticate, getEventRegistrations);

@@ -1,42 +1,66 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Navbar } from '../components/Navbar';
-import { EventCard } from '../components/EventCard';
-import { eventService, registrationService } from '../services/api';
+import { Search, Plus, CalendarX2 } from 'lucide-react';
+import { Navbar } from '../components/layout/Navbar';
+import { EventCard } from '../components/event/EventCard';
+import { eventService } from '../services/eventService';
+import { registrationService } from '../services/api';
 import { useAuth } from '../hooks/useAuth';
-import { useSocket } from '../hooks/useSocket';
-import { getSocket, joinEventRoom } from '../lib/socket';
-import { Plus } from 'lucide-react';
+import { useToast } from '../hooks/useToast';
+import { useEventFilters } from '../hooks/useEventFilters';
+import { useRegistrationActions } from '../hooks/useRegistrationActions';
+import { EmptyState } from '../components/ui/EmptyState';
+import { EventCardSkeleton } from '../components/ui/Skeleton';
+import { Button } from '../components/ui/Button';
+import { useEventState } from '../hooks/useEventState';
+
+const FILTER_CHIPS = ['all', 'conference', 'seminar', 'workshop', 'networking', 'other'];
 
 export const Dashboard = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
-  useSocket(); // Initialize socket
-  const [events, setEvents] = useState([]);
+  const { showToast } = useToast();
+  const { events, setFromApi, updateRegistrationCount } = useEventState();
   const [userRegistrations, setUserRegistrations] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [registrationLoading, setRegistrationLoading] = useState(false);
-  const [category, setCategory] = useState('');
   const [page, setPage] = useState(1);
+  const { search, setSearch, category, setCategory, filteredEvents } = useEventFilters(events);
 
-  // Fetch events
+  const { registrationLoadingId, registerForEvent, unregisterFromEvent } = useRegistrationActions({
+    onSuccess: ({ type, eventId, response }) => {
+      if (type === 'register') {
+        setUserRegistrations((prev) => [...new Set([...prev, eventId])]);
+        showToast('Successfully registered for the event.', 'success');
+      }
+
+      if (type === 'unregister') {
+        setUserRegistrations((prev) => prev.filter((id) => id !== eventId));
+        showToast('Registration cancelled.', 'success');
+      }
+
+      updateRegistrationCount(eventId, response.updatedCount);
+    },
+    onError: (error) => {
+      showToast(error.message || 'Something went wrong.', 'error');
+    },
+  });
+
   useEffect(() => {
     const fetchEvents = async () => {
       try {
         setLoading(true);
-        const response = await eventService.getAll(category, page, 10);
-        setEvents(response.events);
+        const response = await eventService.getAll('', page, 30);
+        setFromApi(response.events);
       } catch (error) {
-        console.error('Failed to fetch events:', error);
+        showToast('Failed to load events.', 'error');
       } finally {
         setLoading(false);
       }
     };
 
     fetchEvents();
-  }, [category, page]);
+  }, [page, showToast, setFromApi]);
 
-  // Fetch user registrations
   useEffect(() => {
     const fetchUserRegistrations = async () => {
       if (user) {
@@ -44,145 +68,90 @@ export const Dashboard = () => {
           const response = await registrationService.getMyRegistrations();
           setUserRegistrations(response.registrations.map((e) => e._id));
         } catch (error) {
-          console.error('Failed to fetch registrations:', error);
+          showToast('Failed to load your registrations.', 'error');
         }
       }
     };
 
     fetchUserRegistrations();
-  }, [user]);
-
-  // Join event rooms for real-time updates
-  useEffect(() => {
-    const socket = getSocket();
-    
-    events.forEach((event) => {
-      joinEventRoom(event._id);
-    });
-
-    // Listen for registration updates
-    const handleRegistrationUpdate = (data) => {
-      const { eventId, registrationCount } = data;
-      setEvents((prev) =>
-        prev.map((event) =>
-          event._id === eventId
-            ? { ...event, registrationCount }
-            : event
-        )
-      );
-    };
-
-    socket.on('registrationUpdate', handleRegistrationUpdate);
-
-    return () => {
-      socket.off('registrationUpdate', handleRegistrationUpdate);
-    };
-  }, [events]);
-
-  const handleRegister = async (eventId) => {
-    try {
-      setRegistrationLoading(true);
-      const response = await registrationService.register(eventId);
-
-      // Update local state
-      setUserRegistrations((prev) => [...prev, eventId]);
-      setEvents((prev) =>
-        prev.map((event) =>
-          event._id === eventId
-            ? { ...event, registrationCount: response.updatedCount }
-            : event
-        )
-      );
-    } catch (error) {
-      console.error('Registration failed:', error);
-      alert(error.message);
-    } finally {
-      setRegistrationLoading(false);
-    }
-  };
-
-  const handleUnregister = async (eventId) => {
-    try {
-      setRegistrationLoading(true);
-      const response = await registrationService.unregister(eventId);
-
-      // Update local state
-      setUserRegistrations((prev) => prev.filter((id) => id !== eventId));
-      setEvents((prev) =>
-        prev.map((event) =>
-          event._id === eventId
-            ? { ...event, registrationCount: response.updatedCount }
-            : event
-        )
-      );
-    } catch (error) {
-      console.error('Unregistration failed:', error);
-      alert(error.message);
-    } finally {
-      setRegistrationLoading(false);
-    }
-  };
+  }, [user, showToast]);
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen page-fade-in">
       <Navbar />
 
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Header */}
-        <div className="flex justify-between items-center mb-8">
-          <div>
-            <h1 className="text-3xl font-bold text-foreground">Events</h1>
-            <p className="text-secondary mt-2">Discover and join events</p>
+      <main className="mx-auto max-w-7xl space-y-6 px-4 py-8 sm:px-6 lg:px-8">
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+          <div className="space-y-1">
+            <h1 className="text-2xl font-semibold text-gray-900">Explore Events</h1>
+            <p className="text-sm text-gray-600">Discover, register, and track your next event.</p>
           </div>
           {user?.role === 'organizer' && (
-            <button
+            <Button
               onClick={() => navigate('/create-event')}
-              className="bg-primary text-white px-4 py-2 rounded hover:bg-blue-600 transition flex items-center space-x-2"
+              className="w-full sm:w-auto"
             >
               <Plus size={18} />
               <span>Create Event</span>
-            </button>
+            </Button>
           )}
         </div>
 
-        {/* Filters */}
-        <div className="mb-8 flex space-x-4">
-          <select
-            value={category}
-            onChange={(e) => {
-              setCategory(e.target.value);
-              setPage(1);
-            }}
-            className="px-4 py-2 border border-border rounded focus:outline-none focus:border-primary"
-          >
-            <option value="">All Categories</option>
-            <option value="conference">Conference</option>
-            <option value="workshop">Workshop</option>
-            <option value="seminar">Seminar</option>
-            <option value="networking">Networking</option>
-            <option value="other">Other</option>
-          </select>
+        <div className="space-y-4 rounded-2xl border border-gray-200 bg-white p-5 shadow-sm">
+          <div className="relative">
+            <Search className="pointer-events-none absolute left-3 top-3 h-5 w-5 text-gray-400" />
+            <input
+              value={search}
+              onChange={(event) => setSearch(event.target.value)}
+              placeholder="Search by title, description, or location"
+              className="h-11 w-full rounded-2xl border border-gray-200 pl-10 pr-3 text-sm outline-none transition-all duration-200 ease-in-out focus:ring-2 focus:ring-blue-500"
+            />
+          </div>
+
+          <div className="flex flex-wrap gap-2">
+            {FILTER_CHIPS.map((chip) => (
+              <button
+                type="button"
+                key={chip}
+                onClick={() => {
+                  setCategory(chip);
+                  setPage(1);
+                }}
+                className={`rounded-full border px-3 py-1.5 text-xs font-medium capitalize transition-all duration-200 ease-in-out ${
+                  category === chip
+                    ? 'border-blue-200 bg-blue-50 text-blue-700'
+                    : 'border-gray-200 text-gray-600 hover:bg-gray-100'
+                }`}
+              >
+                {chip === 'all' ? 'All' : chip}
+              </button>
+            ))}
+          </div>
         </div>
 
-        {/* Events Grid */}
         {loading ? (
-          <div className="flex items-center justify-center py-12">
-            <p className="text-secondary">Loading events...</p>
+          <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
+            {Array.from({ length: 6 }).map((_, index) => (
+              <EventCardSkeleton key={index} />
+            ))}
           </div>
-        ) : events.length === 0 ? (
-          <div className="text-center py-12">
-            <p className="text-secondary text-lg">No events found</p>
-          </div>
+        ) : filteredEvents.length === 0 ? (
+          <EmptyState
+            icon={CalendarX2}
+            title="No events found"
+            description="Try changing search terms or category filters."
+          />
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {events.map((event) => (
+          <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
+            {filteredEvents.map((event) => (
               <EventCard
                 key={event._id}
                 event={event}
+                isOrganizer={event.organizer?._id === user?.id || event.organizer?.id === user?.id}
                 isRegistered={userRegistrations.includes(event._id)}
-                onRegister={handleRegister}
-                onUnregister={handleUnregister}
-                registrationLoading={registrationLoading}
+                isActionLoading={registrationLoadingId === event._id}
+                onRegister={registerForEvent}
+                onUnregister={unregisterFromEvent}
               />
             ))}
           </div>

@@ -9,7 +9,16 @@ const notificationSchema = new mongoose.Schema(
     },
     type: {
       type: String,
-      enum: ['event_created', 'event_updated', 'registration_confirmed', 'new_registration'],
+      enum: [
+        'NEW_EVENT',
+        'NEW_REGISTRATION',
+        'UNREGISTER',
+        'EVENT_UPDATED',
+        'event_created',
+        'event_updated',
+        'registration_confirmed',
+        'new_registration',
+      ],
       required: true,
     },
     message: {
@@ -41,6 +50,16 @@ const notificationSchema = new mongoose.Schema(
 // Index for faster queries
 notificationSchema.index({ user: 1, read: 1 });
 notificationSchema.index({ createdAt: -1 });
+
+notificationSchema.set('toJSON', {
+  virtuals: true,
+  transform: (_doc, ret) => {
+    ret.userId = ret.user;
+    ret.eventId = ret.relatedEvent;
+    ret.isRead = ret.read;
+    return ret;
+  },
+});
 
 const Notification = mongoose.model('Notification', notificationSchema);
 export default Notification;

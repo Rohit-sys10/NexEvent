@@ -1,6 +1,6 @@
 import { io } from 'socket.io-client';
 
-const SOCKET_URL = import.meta.env.VITE_SOCKET_URL || 'http://localhost:5000';
+const SOCKET_URL = import.meta.env.VITE_SOCKET_URL || 'http://localhost:5050';
 
 let socket = null;
 
@@ -16,6 +16,7 @@ export const initSocket = () => {
 
   socket.on('connect', () => {
     console.log('[Socket] Connected:', socket.id);
+    socket.emit('joinGlobal');
   });
 
   socket.on('disconnect', () => {
@@ -57,6 +58,11 @@ export const leaveEventRoom = (eventId) => {
 export const joinUserRoom = (userId) => {
   const sock = getSocket();
   sock.emit('joinUserRoom', userId);
+};
+
+export const joinGlobalRoom = () => {
+  const sock = getSocket();
+  sock.emit('joinGlobal');
 };
 
 export const broadcastRegistration = (data) => {

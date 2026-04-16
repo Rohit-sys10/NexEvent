@@ -15,6 +15,10 @@ const eventSchema = new mongoose.Schema(
       type: Date,
       required: [true, 'Please provide an event date'],
     },
+    dateTime: {
+      type: Date,
+      default: null,
+    },
     location: {
       type: String,
       required: [true, 'Please provide a location'],
@@ -24,10 +28,25 @@ const eventSchema = new mongoose.Schema(
       ref: 'User',
       required: true,
     },
+    createdBy: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'User',
+      default: null,
+    },
     registrationCount: {
       type: Number,
       default: 0,
     },
+    registrationDeadline: {
+      type: Date,
+      default: null,
+    },
+    registeredUsers: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User',
+      },
+    ],
     maxCapacity: {
       type: Number,
       default: null,
@@ -52,6 +71,27 @@ const eventSchema = new mongoose.Schema(
 // Index for faster queries
 eventSchema.index({ organizer: 1 });
 eventSchema.index({ date: 1 });
+eventSchema.index({ registrationDeadline: 1 });
+
+eventSchema.pre('save', function syncFields(next) {
+  if (this.dateTime && !this.date) {
+    this.date = this.dateTime;
+  }
+  if (this.date && !this.dateTime) {
+    this.dateTime = this.date;
+  }
+  if (!this.registrationDeadline) {
+    this.registrationDeadline = this.dateTime || this.date;
+  }
+  if (!this.createdBy) {
+    this.createdBy = this.organizer;
+  }
+  if (!Array.isArray(this.registeredUsers)) {
+    this.registeredUsers = [];
+  }
+  this.registrationCount = this.registeredUsers.length;
+  next();
+});
 
 const Event = mongoose.model('Event', eventSchema);
 export default Event;

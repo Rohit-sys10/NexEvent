@@ -1,6 +1,7 @@
 export const setupSocketHandlers = (io) => {
   io.on('connection', (socket) => {
     console.log('New user connected:', socket.id);
+    socket.join('global');
 
     // Join a room for a specific event
     socket.on('joinEvent', (eventId) => {
@@ -44,6 +45,10 @@ export const setupSocketHandlers = (io) => {
     socket.on('joinUserRoom', (userId) => {
       socket.join(`user_${userId}`);
       console.log(`User ${socket.id} joined notification room: user_${userId}`);
+    });
+
+    socket.on('joinGlobal', () => {
+      socket.join('global');
     });
 
     // Disconnect handler

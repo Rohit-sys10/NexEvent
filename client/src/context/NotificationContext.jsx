@@ -3,6 +3,14 @@ import { notificationService } from '../services/api';
 
 export const NotificationContext = createContext();
 
+const normalizeNotification = (notification) => ({
+  ...notification,
+  _id: notification._id || notification.id,
+  read: notification.read ?? notification.isRead ?? false,
+  isRead: notification.isRead ?? notification.read ?? false,
+  relatedEvent: notification.relatedEvent || notification.eventId,
+});
+
 export const NotificationProvider = ({ children }) => {
   const [notifications, setNotifications] = useState([]);
   const [unreadCount, setUnreadCount] = useState(0);
@@ -12,7 +20,7 @@ export const NotificationProvider = ({ children }) => {
     try {
       setLoading(true);
       const response = await notificationService.getAll(page, limit, unreadOnly);
-      setNotifications(response.notifications);
+      setNotifications((response.notifications || []).map(normalizeNotification));
       setUnreadCount(response.unreadCount);
       return response;
     } catch (error) {
@@ -27,7 +35,7 @@ export const NotificationProvider = ({ children }) => {
       await notificationService.markAsRead(notificationId);
       setNotifications((prev) =>
         prev.map((notif) =>
-          notif._id === notificationId ? { ...notif, read: true } : notif
+          notif._id === notificationId ? { ...notif, read: true, isRead: true } : notif
         )
       );
       setUnreadCount((prev) => Math.max(0, prev - 1));
@@ -39,7 +47,7 @@ export const NotificationProvider = ({ children }) => {
   const markAllAsRead = useCallback(async () => {
     try {
       await notificationService.markAllAsRead();
-      setNotifications((prev) => prev.map((notif) => ({ ...notif, read: true })));
+      setNotifications((prev) => prev.map((notif) => ({ ...notif, read: true, isRead: true })));
       setUnreadCount(0);
     } catch (error) {
       console.error('Failed to mark all as read:', error);
@@ -60,8 +68,29 @@ export const NotificationProvider = ({ children }) => {
   }, [notifications]);
 
   const addNotification = useCallback((notification) => {
-    setNotifications((prev) => [notification, ...prev]);
-    setUnreadCount((prev) => prev + 1);
+    const next = normalizeNotification(notification);
+    setNotifications((prev) => [next, ...prev.filter((item) => item._id !== next._id)]);
+    if (!next.read) {
+      setUnreadCount((prev) => prev + 1);
+    }
+  }, []);
+
+  const addNotifications = useCallback((notificationList) => {
+    if (!Array.isArray(notificationList)) return;
+
+    const normalized = notificationList.map(normalizeNotification);
+    setNotifications((prev) => {
+      const existing = new Map(prev.map((item) => [item._id, item]));
+      normalized.forEach((item) => existing.set(item._id, item));
+      return Array.from(existing.values()).sort(
+        (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+      );
+    });
+
+    const unreadIncoming = normalized.filter((item) => !item.read).length;
+    if (unreadIncoming > 0) {
+      setUnreadCount((prev) => prev + unreadIncoming);
+    }
   }, []);
 
   const value = {
@@ -73,6 +102,7 @@ export const NotificationProvider = ({ children }) => {
     markAllAsRead,
     deleteNotification,
     addNotification,
+    addNotifications,
   };
 
   return (

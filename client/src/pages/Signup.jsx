@@ -1,7 +1,10 @@
 import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
-import { User, Mail, Lock, UserPlus } from 'lucide-react';
+import { UserPlus } from 'lucide-react';
+import { Input } from '../components/ui/Input';
+import { Button } from '../components/ui/Button';
+import { useToast } from '../hooks/useToast';
 
 export const Signup = () => {
   const [name, setName] = useState('');
@@ -9,145 +12,96 @@ export const Signup = () => {
   const [password, setPassword] = useState('');
   const [role, setRole] = useState('user');
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
   const { register } = useAuth();
+  const { showToast } = useToast();
   const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setError('');
     setLoading(true);
 
     if (password.length < 6) {
-      setError('Password must be at least 6 characters');
+      showToast('Password must be at least 6 characters.', 'error');
       setLoading(false);
       return;
     }
 
     try {
       await register(name, email, password, role);
+      showToast('Account created successfully.', 'success');
       navigate('/dashboard');
     } catch (err) {
-      setError(err.message || 'Signup failed');
+      showToast(err.message || 'Signup failed', 'error');
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-primary to-blue-600 flex items-center justify-center p-4">
-      <div className="w-full max-w-md">
-        <div className="bg-white rounded shadow-lg p-8">
-          {/* Header */}
-          <div className="text-center mb-8">
-            <h1 className="text-3xl font-bold text-primary mb-2">NexEvent</h1>
-            <p className="text-secondary">Create your account to get started</p>
-          </div>
+    <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-blue-100 via-cyan-50 to-emerald-100 p-4">
+      <div className="w-full max-w-md rounded-2xl border border-gray-200 bg-white p-8 shadow-md page-fade-in">
+        <div className="mb-8 text-center">
+          <h1 className="text-2xl font-semibold text-gray-900">Create Account</h1>
+          <p className="mt-2 text-sm text-gray-600">Join NexEvent and start exploring events.</p>
+        </div>
 
-          {/* Error Message */}
-          {error && (
-            <div className="mb-4 p-3 bg-red-50 border border-destructive text-destructive rounded text-sm">
-              {error}
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <Input
+            label="Full Name"
+            value={name}
+            onChange={(event) => setName(event.target.value)}
+            placeholder="John Doe"
+            required
+          />
+          <Input
+            label="Email"
+            type="email"
+            value={email}
+            onChange={(event) => setEmail(event.target.value)}
+            placeholder="you@example.com"
+            required
+          />
+          <Input
+            label="Password"
+            type="password"
+            value={password}
+            onChange={(event) => setPassword(event.target.value)}
+            placeholder="••••••••"
+            required
+          />
+
+          <label className="block space-y-2">
+            <span className="text-sm font-medium text-gray-700">Account Type</span>
+            <div className="grid grid-cols-2 gap-2">
+              {['user', 'organizer'].map((option) => (
+                <button
+                  key={option}
+                  type="button"
+                  onClick={() => setRole(option)}
+                  className={`h-10 rounded-2xl border text-sm font-medium capitalize transition-all duration-200 ease-in-out ${
+                    role === option
+                      ? 'border-blue-200 bg-blue-50 text-blue-700'
+                      : 'border-gray-200 text-gray-600 hover:bg-gray-100'
+                  }`}
+                >
+                  {option}
+                </button>
+              ))}
             </div>
-          )}
+          </label>
 
-          {/* Form */}
-          <form onSubmit={handleSubmit} className="space-y-4">
-            {/* Name */}
-            <div>
-              <label className="block text-sm font-medium text-foreground mb-2">Full Name</label>
-              <div className="relative">
-                <User className="absolute left-3 top-3 text-secondary" size={18} />
-                <input
-                  type="text"
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  required
-                  className="w-full pl-10 pr-4 py-2 border border-border rounded focus:outline-none focus:border-primary"
-                  placeholder="John Doe"
-                />
-              </div>
-            </div>
+          <Button type="submit" loading={loading} fullWidth>
+            <UserPlus className="h-4 w-4" />
+            Sign Up
+          </Button>
+        </form>
 
-            {/* Email */}
-            <div>
-              <label className="block text-sm font-medium text-foreground mb-2">Email</label>
-              <div className="relative">
-                <Mail className="absolute left-3 top-3 text-secondary" size={18} />
-                <input
-                  type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  required
-                  className="w-full pl-10 pr-4 py-2 border border-border rounded focus:outline-none focus:border-primary"
-                  placeholder="you@example.com"
-                />
-              </div>
-            </div>
-
-            {/* Password */}
-            <div>
-              <label className="block text-sm font-medium text-foreground mb-2">Password</label>
-              <div className="relative">
-                <Lock className="absolute left-3 top-3 text-secondary" size={18} />
-                <input
-                  type="password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  required
-                  className="w-full pl-10 pr-4 py-2 border border-border rounded focus:outline-none focus:border-primary"
-                  placeholder="••••••••"
-                />
-              </div>
-              <p className="text-xs text-secondary mt-1">Minimum 6 characters</p>
-            </div>
-
-            {/* Role */}
-            <div>
-              <label className="block text-sm font-medium text-foreground mb-2">Account Type</label>
-              <div className="flex space-x-4">
-                <label className="flex items-center space-x-2 cursor-pointer">
-                  <input
-                    type="radio"
-                    value="user"
-                    checked={role === 'user'}
-                    onChange={(e) => setRole(e.target.value)}
-                    className="w-4 h-4"
-                  />
-                  <span className="text-sm text-foreground">User</span>
-                </label>
-                <label className="flex items-center space-x-2 cursor-pointer">
-                  <input
-                    type="radio"
-                    value="organizer"
-                    checked={role === 'organizer'}
-                    onChange={(e) => setRole(e.target.value)}
-                    className="w-4 h-4"
-                  />
-                  <span className="text-sm text-foreground">Organizer</span>
-                </label>
-              </div>
-            </div>
-
-            {/* Submit Button */}
-            <button
-              type="submit"
-              disabled={loading}
-              className="w-full bg-primary text-white py-2 rounded font-medium hover:bg-blue-600 transition disabled:opacity-50 flex items-center justify-center space-x-2"
-            >
-              <UserPlus size={18} />
-              <span>{loading ? 'Creating account...' : 'Sign Up'}</span>
-            </button>
-          </form>
-
-          {/* Link to Login */}
-          <p className="text-center mt-6 text-secondary text-sm">
+        <p className="mt-6 text-center text-sm text-gray-600">
             Already have an account?{' '}
-            <Link to="/login" className="text-primary hover:underline font-medium">
+            <Link to="/login" className="font-medium text-blue-700 hover:underline">
               Login here
             </Link>
-          </p>
-        </div>
+        </p>
       </div>
     </div>
   );

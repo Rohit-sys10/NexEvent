@@ -1,6 +1,16 @@
 import Notification from '../models/Notification.js';
 import { asyncHandler } from '../middleware/errorHandler.js';
 
+const normalizeNotification = (notification) => {
+  const data = notification.toJSON ? notification.toJSON() : notification;
+  return {
+    ...data,
+    userId: data.userId || data.user,
+    eventId: data.eventId || data.relatedEvent,
+    isRead: data.isRead ?? data.read,
+  };
+};
+
 export const getNotifications = asyncHandler(async (req, res) => {
   const userId = req.user.id;
   const { page = 1, limit = 10, unreadOnly = false } = req.query;
@@ -23,7 +33,7 @@ export const getNotifications = asyncHandler(async (req, res) => {
   });
 
   res.status(200).json({
-    notifications,
+    notifications: notifications.map(normalizeNotification),
     unreadCount,
     pagination: {
       total,
@@ -52,7 +62,7 @@ export const markAsRead = asyncHandler(async (req, res) => {
 
   res.status(200).json({
     message: 'Notification marked as read',
-    notification,
+    notification: normalizeNotification(notification),
   });
 });
 

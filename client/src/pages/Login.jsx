@@ -1,101 +1,71 @@
 import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
-import { Mail, Lock, LogIn } from 'lucide-react';
+import { LogIn } from 'lucide-react';
+import { Input } from '../components/ui/Input';
+import { Button } from '../components/ui/Button';
+import { useToast } from '../hooks/useToast';
 
 export const Login = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
   const { login } = useAuth();
+  const { showToast } = useToast();
   const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setError('');
     setLoading(true);
 
     try {
       await login(email, password);
+      showToast('Welcome back!', 'success');
       navigate('/dashboard');
     } catch (err) {
-      setError(err.message || 'Login failed');
+      showToast(err.message || 'Login failed', 'error');
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-primary to-blue-600 flex items-center justify-center p-4">
-      <div className="w-full max-w-md">
-        <div className="bg-white rounded shadow-lg p-8">
-          {/* Header */}
-          <div className="text-center mb-8">
-            <h1 className="text-3xl font-bold text-primary mb-2">NexEvent</h1>
-            <p className="text-secondary">Welcome back! Login to your account</p>
-          </div>
+    <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-blue-100 via-cyan-50 to-emerald-100 p-4">
+      <div className="w-full max-w-md rounded-2xl border border-gray-200 bg-white p-8 shadow-md page-fade-in">
+        <div className="mb-8 text-center">
+          <h1 className="text-2xl font-semibold text-gray-900">NexEvent</h1>
+          <p className="mt-2 text-sm text-gray-600">Login to continue managing your events.</p>
+        </div>
 
-          {/* Error Message */}
-          {error && (
-            <div className="mb-4 p-3 bg-red-50 border border-destructive text-destructive rounded text-sm">
-              {error}
-            </div>
-          )}
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <Input
+            label="Email"
+            type="email"
+            value={email}
+            onChange={(event) => setEmail(event.target.value)}
+            placeholder="you@example.com"
+            required
+          />
+          <Input
+            label="Password"
+            type="password"
+            value={password}
+            onChange={(event) => setPassword(event.target.value)}
+            placeholder="••••••••"
+            required
+          />
+          <Button type="submit" loading={loading} fullWidth>
+            <LogIn className="h-4 w-4" />
+            Login
+          </Button>
+        </form>
 
-          {/* Form */}
-          <form onSubmit={handleSubmit} className="space-y-4">
-            {/* Email */}
-            <div>
-              <label className="block text-sm font-medium text-foreground mb-2">Email</label>
-              <div className="relative">
-                <Mail className="absolute left-3 top-3 text-secondary" size={18} />
-                <input
-                  type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  required
-                  className="w-full pl-10 pr-4 py-2 border border-border rounded focus:outline-none focus:border-primary"
-                  placeholder="you@example.com"
-                />
-              </div>
-            </div>
-
-            {/* Password */}
-            <div>
-              <label className="block text-sm font-medium text-foreground mb-2">Password</label>
-              <div className="relative">
-                <Lock className="absolute left-3 top-3 text-secondary" size={18} />
-                <input
-                  type="password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  required
-                  className="w-full pl-10 pr-4 py-2 border border-border rounded focus:outline-none focus:border-primary"
-                  placeholder="••••••••"
-                />
-              </div>
-            </div>
-
-            {/* Submit Button */}
-            <button
-              type="submit"
-              disabled={loading}
-              className="w-full bg-primary text-white py-2 rounded font-medium hover:bg-blue-600 transition disabled:opacity-50 flex items-center justify-center space-x-2"
-            >
-              <LogIn size={18} />
-              <span>{loading ? 'Logging in...' : 'Login'}</span>
-            </button>
-          </form>
-
-          {/* Link to Signup */}
-          <p className="text-center mt-6 text-secondary text-sm">
+        <p className="mt-6 text-center text-sm text-gray-600">
             Don&apos;t have an account?{' '}
-            <Link to="/signup" className="text-primary hover:underline font-medium">
+            <Link to="/signup" className="font-medium text-blue-700 hover:underline">
               Sign up here
             </Link>
-          </p>
-        </div>
+        </p>
       </div>
     </div>
   );
