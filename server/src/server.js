@@ -7,7 +7,7 @@ import { setupSocketHandlers } from './socket/socketHandlers.js';
 import { setRealtimeIO } from './socket/realtime.js';
 import { corsOriginDelegate } from './config/cors.js';
 
-const PORT = process.env.BACKEND_PORT || 5001;
+const PORT = process.env.PORT || 5001;
 
 // Create HTTP server
 const server = http.createServer(app);
@@ -20,41 +20,26 @@ const io = new Server(server, {
   },
 });
 
-// Setup Socket.io handlers
 setupSocketHandlers(io);
 setRealtimeIO(io);
 
-// Connect to database and start server
 const startServer = async () => {
   try {
     await connectDB();
 
-    server.once('error', (error) => {
-      if (error?.code === 'EADDRINUSE') {
-        console.error(`Port ${PORT} is already in use. Stop the existing process or use a different PORT.`);
-      } else {
-        console.error('Server startup error:', error);
-      }
-      process.exit(1);
+    server.listen(PORT, () => {
+      console.log(`Server running on port ${PORT}`);
     });
 
-    server.listen(PORT, () => {
-      console.log(`Server is running on port ${PORT}`);
-      console.log(`WebSocket server ready at http://localhost:${PORT}`);
-    });
   } catch (error) {
     console.error('Failed to start server:', error);
     process.exit(1);
   }
 };
 
-// Handle graceful shutdown
 process.on('SIGINT', () => {
-  console.log('Shutting down gracefully...');
-  server.close(() => {
-    console.log('Server closed');
-    process.exit(0);
-  });
+  console.log('Shutting down...');
+  server.close(() => process.exit(0));
 });
 
 startServer();
