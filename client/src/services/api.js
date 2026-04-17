@@ -18,8 +18,7 @@ export const authService = {
   getCurrentUser: () => apiCall('/api/auth/me', { method: 'GET' }),
 
   logout: () => {
-    localStorage.removeItem('token');
-    localStorage.removeItem('user');
+    sessionStorage.removeItem('token');
   },
 };
 

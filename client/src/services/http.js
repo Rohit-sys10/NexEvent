@@ -1,6 +1,10 @@
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5050';
+const API_URL = import.meta.env.VITE_API_URL;
 
-const getToken = () => localStorage.getItem('token');
+if (!API_URL) {
+  throw new Error('VITE_API_URL is not defined');
+}
+
+const getToken = () => sessionStorage.getItem('token');
 
 export const apiCall = async (endpoint, options = {}) => {
   const url = `${API_URL}${endpoint}`;
@@ -19,10 +23,15 @@ export const apiCall = async (endpoint, options = {}) => {
     headers,
   });
 
-  const data = await response.json();
+  let data = null;
+  try {
+    data = await response.json();
+  } catch {
+    data = null;
+  }
 
   if (!response.ok) {
-    throw new Error(data.message || 'API Error');
+    throw new Error(data?.message || 'API Error');
   }
 
   return data;

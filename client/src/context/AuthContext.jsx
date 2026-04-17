@@ -3,21 +3,52 @@ import { authService } from '../services/api';
 
 export const AuthContext = createContext();
 
+const decodeTokenUser = (token) => {
+  if (!token || typeof token !== 'string') return null;
+
+  const parts = token.split('.');
+  if (parts.length !== 3) return null;
+
+  try {
+    const payload = JSON.parse(atob(parts[1].replace(/-/g, '+').replace(/_/g, '/')));
+
+    if (!payload?.id || !payload?.role) {
+      return null;
+    }
+
+    if (payload.exp && Date.now() >= payload.exp * 1000) {
+      return null;
+    }
+
+    return {
+      id: String(payload.id),
+      role: payload.role,
+    };
+  } catch {
+    return null;
+  }
+};
+
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [token, setToken] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  // Initialize auth from localStorage
+  // Initialize auth from sessionStorage token
   useEffect(() => {
-    const storedToken = localStorage.getItem('token');
-    const storedUser = localStorage.getItem('user');
+    const storedToken = sessionStorage.getItem('token');
 
-    if (storedToken && storedUser) {
-      setToken(storedToken);
-      setUser(JSON.parse(storedUser));
+    if (storedToken) {
+      const decodedUser = decodeTokenUser(storedToken);
+      if (decodedUser) {
+        setToken(storedToken);
+        setUser(decodedUser);
+      } else {
+        sessionStorage.removeItem('token');
+      }
     }
+
     setLoading(false);
   }, []);
 
@@ -25,10 +56,16 @@ export const AuthProvider = ({ children }) => {
     try {
       setLoading(true);
       const response = await authService.register(name, email, password, role);
-      setToken(response.token);
-      setUser(response.user);
-      localStorage.setItem('token', response.token);
-      localStorage.setItem('user', JSON.stringify(response.user));
+
+      const nextToken = response?.token;
+      const decodedUser = decodeTokenUser(nextToken);
+      if (!nextToken || !decodedUser) {
+        throw new Error('Invalid authentication token');
+      }
+
+      sessionStorage.setItem('token', nextToken);
+      setToken(nextToken);
+      setUser(decodedUser);
       setError(null);
       return response;
     } catch (err) {
@@ -43,10 +80,16 @@ export const AuthProvider = ({ children }) => {
     try {
       setLoading(true);
       const response = await authService.login(email, password);
-      setToken(response.token);
-      setUser(response.user);
-      localStorage.setItem('token', response.token);
-      localStorage.setItem('user', JSON.stringify(response.user));
+
+      const nextToken = response?.token;
+      const decodedUser = decodeTokenUser(nextToken);
+      if (!nextToken || !decodedUser) {
+        throw new Error('Invalid authentication token');
+      }
+
+      sessionStorage.setItem('token', nextToken);
+      setToken(nextToken);
+      setUser(decodedUser);
       setError(null);
       return response;
     } catch (err) {
@@ -60,8 +103,7 @@ export const AuthProvider = ({ children }) => {
   const logout = () => {
     setUser(null);
     setToken(null);
-    localStorage.removeItem('token');
-    localStorage.removeItem('user');
+    sessionStorage.removeItem('token');
     setError(null);
   };
 
@@ -70,7 +112,7 @@ export const AuthProvider = ({ children }) => {
     token,
     loading,
     error,
-    isAuthenticated: !!token,
+    isAuthenticated: !!token && !!user,
     register,
     login,
     logout,

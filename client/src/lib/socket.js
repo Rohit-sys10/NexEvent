@@ -1,11 +1,14 @@
 import { io } from 'socket.io-client';
 
-const SOCKET_URL = import.meta.env.VITE_SOCKET_URL || 'http://localhost:5050';
+const SOCKET_URL = import.meta.env.VITE_API_URL;
 
 let socket = null;
 
 export const initSocket = () => {
   if (socket) return socket;
+  if (!SOCKET_URL) {
+    throw new Error('VITE_API_URL is not defined');
+  }
 
   socket = io(SOCKET_URL, {
     reconnection: true,
