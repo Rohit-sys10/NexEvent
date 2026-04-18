@@ -86,51 +86,112 @@ Use the following accounts to explore different roles in the application:
 
 ```
 NexEvent/
-├── server/                     # Backend - Express.js
-│   ├── src/
-│   │   ├── models/            # MongoDB schemas (User, Event, Registration, Notification)
-│   │   ├── controllers/       # Business logic (auth, events, registrations, notifications)
-│   │   ├── routes/            # API endpoint definitions
-│   │   ├── middleware/        # Authentication & error handling
-│   │   ├── socket/            # Real-time Socket.io event handlers
-│   │   ├── config/            # Database connection configuration
-│   │   ├── app.js             # Express application setup
-│   │   └── server.js          # Server entry point
-│   ├── package.json
-│   ├── .env                   # Environment variables (excluded)
-│   └── README.md              # Backend documentation
-│
-├── client/                     # Frontend - React + Vite
-│   ├── src/
-│   │   ├── pages/             # Page components (Login, Dashboard, EventDetail, etc.)
-│   │   ├── components/        # Reusable UI components
-│   │   ├── hooks/             # Custom React hooks (useAuth, useSocket, useNotification)
-│   │   ├── context/           # React Context providers (Auth, Notifications)
-│   │   ├── services/          # API client and utility services
-│   │   ├── lib/               # Socket.io client initialization
-│   │   ├── App.jsx            # Root application component
-│   │   ├── main.jsx           # Application entry point
-│   │   └── styles.css         # Global styles
+├── .gitignore
+├── package.json
+├── pnpm-lock.yaml
+├── README.md
+├── client/
+│   ├── .env
 │   ├── index.html
-│   ├── vite.config.js
-│   ├── tailwind.config.js
-│   ├── postcss.config.js
 │   ├── package.json
-│   ├── .env                   # Environment variables (excluded)
-│   └── README.md              # Frontend documentation
-│
-├── components/                 # Shared UI components (Next.js)
-├── app/                        # Next.js app configuration
-├── styles/                     # Global stylesheet
-├── public/                     # Static assets
-├── tsconfig.json              # TypeScript configuration
-├── next.config.mjs            # Next.js configuration
-├── tailwind.config.js         # Tailwind configuration
-├── postcss.config.js          # PostCSS configuration
-├── eslint.config.mjs          # ESLint configuration
-├── package.json               # Root dependencies
-├── pnpm-lock.yaml             # Dependency lock file
-└── README.md                  # This file
+│   ├── package-lock.json
+│   ├── postcss.config.js
+│   ├── tailwind.config.js
+│   ├── vite.config.js
+│   ├── public/
+│   │   └── icon.svg
+│   └── src/
+│       ├── App.jsx
+│       ├── main.jsx
+│       ├── styles.css
+│       ├── components/
+│       │   ├── ErrorBoundary.jsx
+│       │   ├── EventCard.jsx
+│       │   ├── Navbar.jsx
+│       │   ├── NotificationBell.jsx
+│       │   ├── ProtectedRoute.jsx
+│       │   ├── event/
+│       │   │   ├── EventCard.jsx
+│       │   │   └── EventForm.jsx
+│       │   ├── layout/
+│       │   │   └── Navbar.jsx
+│       │   ├── notification/
+│       │   │   └── NotificationDropdown.jsx
+│       │   └── ui/
+│       │       ├── Avatar.jsx
+│       │       ├── Badge.jsx
+│       │       ├── Button.jsx
+│       │       ├── Card.jsx
+│       │       ├── EmptyState.jsx
+│       │       ├── Input.jsx
+│       │       ├── Skeleton.jsx
+│       │       └── Toaster.jsx
+│       ├── context/
+│       │   ├── AuthContext.jsx
+│       │   ├── NotificationContext.jsx
+│       │   └── ToastContext.jsx
+│       ├── hooks/
+│       │   ├── useAuth.js
+│       │   ├── useCountdown.js
+│       │   ├── useEventFilters.js
+│       │   ├── useEventForm.js
+│       │   ├── useEventState.js
+│       │   ├── useNotification.js
+│       │   ├── useNotifications.js
+│       │   ├── useRegistrationActions.js
+│       │   ├── useSocket.js
+│       │   └── useToast.js
+│       ├── lib/
+│       │   ├── event.js
+│       │   ├── socket.js
+│       │   └── ui.js
+│       ├── pages/
+│       │   ├── CreateEvent.jsx
+│       │   ├── Dashboard.jsx
+│       │   ├── EditEvent.jsx
+│       │   ├── EventDetail.jsx
+│       │   ├── Login.jsx
+│       │   ├── MyRegistrations.jsx
+│       │   └── Signup.jsx
+│       ├── services/
+│       │   ├── api.js
+│       │   ├── eventService.js
+│       │   ├── http.js
+│       │   └── notificationService.js
+│       └── state/
+│           └── EventState.jsx
+└── server/
+   ├── .env
+   ├── .gitignore
+   ├── package.json
+   ├── package-lock.json
+   └── src/
+      ├── app.js
+      ├── server.js
+      ├── config/
+      │   ├── cors.js
+      │   └── database.js
+      ├── controllers/
+      │   ├── authController.js
+      │   ├── eventController.js
+      │   ├── notificationController.js
+      │   └── registrationController.js
+      ├── middleware/
+      │   ├── authMiddleware.js
+      │   └── errorHandler.js
+      ├── models/
+      │   ├── Event.js
+      │   ├── Notification.js
+      │   ├── Registration.js
+      │   └── User.js
+      ├── routes/
+      │   ├── auth.js
+      │   ├── events.js
+      │   ├── notifications.js
+      │   └── registrations.js
+      └── socket/
+         ├── realtime.js
+         └── socketHandlers.js
 ```
 
 ## Getting Started
