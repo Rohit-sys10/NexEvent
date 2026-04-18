@@ -4,6 +4,31 @@
 
 A comprehensive full-stack event management solution enabling users to discover, create, and register for events with real-time updates and instant notifications. Built with modern technologies for scalability, security, and optimal user experience.
 
+## Live Demo
+
+Experience the application live:
+
+-  Frontend: https://nex-event-five.vercel.app  
+-  Backend API: https://nexevent-l7az.onrender.com  
+
+
+---
+
+## Test Credentials
+
+Use the following accounts to explore different roles in the application:
+
+### 👤 User Access
+- **Email:** usernew@gmail.com  
+- **Password:** 789321  
+
+### 🛠️ Organizer Access
+- **Email:** organizer@gmail.com  
+- **Password:** 564896  
+
+---
+
+
 ## Table of Contents
 
 - [Features](#features)
