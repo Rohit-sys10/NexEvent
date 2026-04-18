@@ -18,11 +18,11 @@ Experience the application live:
 
 Use the following accounts to explore different roles in the application:
 
-### 👤 User Access
+### User Access
 - **Email:** usernew@gmail.com  
 - **Password:** 789321  
 
-### 🛠️ Organizer Access
+### Organizer Access
 - **Email:** organizer@gmail.com  
 - **Password:** 564896  
 
