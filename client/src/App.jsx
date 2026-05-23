@@ -6,6 +6,7 @@ import { EventStateProvider } from './state/EventState';
 import { Toaster } from './components/ui/Toaster';
 import { ProtectedRoute } from './components/ProtectedRoute';
 import { useSocket } from './hooks/useSocket';
+import { ApiWakeIndicator } from './components/ApiWakeIndicator';
 
 // Pages
 import { Login } from './pages/Login';
@@ -31,6 +32,7 @@ function App() {
           <EventStateProvider>
             <NotificationProvider>
               <SocketBootstrap />
+              <ApiWakeIndicator />
               <Routes>
               <Route path="/login" element={<Login />} />
               <Route path="/signup" element={<Signup />} />
